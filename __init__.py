@@ -1,7 +1,5 @@
 __author__ = 'Simone Biffi'
-
-from bs4 import BeautifulSoup
-import urllib
+from manager import unt
 
 '''
     Atum is an Egyptian deity, he was the creator god, self-generated.
@@ -9,4 +7,4 @@ import urllib
 '''
 
 if __name__ == "__main__":
-    pass
+    unt.scrape()
