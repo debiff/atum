@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 from helper.unt.category import Category
-from urllib.request import urlopen, urlretrieve
+from urllib.request import urlopen, urlretrieve, HTTPError
 import os
 
 
@@ -50,32 +50,36 @@ def scrape():
                 data_warning = True if '2017' in data.text else False
                 # IF WARNING IS ACTIVE SKIP THE SCRAPING
                 if warning is None and not data_warning:
-                    article_link = initial_url + article_a.get('href') + 'm1/1/'
-                    next_article_page = True
-                    fpath = './Dataset/' + cat.name + '/' + article_title
-                    if not os.path.exists(fpath):
-                        os.makedirs(fpath)
-                    # WHILE THERE IS A NEXT ARTICLE PAGE SAVE LINK AND DOWNLOAD FILE
-                    fname_index = 1
-                    while next_article_page:
-                        i += 1
-                        # OPEN THE ARTICLE PAGE AND PARSE THE HTML
-                        article_image_page = urlopen(article_link)
-                        article_soup = BeautifulSoup(article_image_page)
+                    try:
+                        article_link = initial_url + article_a.get('href') + 'm1/1/'
+                        next_article_page = True
+                        fpath = './Dataset/' + cat.name + '/' + article_title
+                        if not os.path.exists(fpath):
+                            os.makedirs(fpath)
+                        # WHILE THERE IS A NEXT ARTICLE PAGE SAVE LINK AND DOWNLOAD FILE
+                        fname_index = 1
+                        while next_article_page:
+                            i += 1
+                            # OPEN THE ARTICLE PAGE AND PARSE THE HTML
+                            article_image_page = urlopen(article_link)
+                            article_soup = BeautifulSoup(article_image_page)
 
-                        # DOWNLOAD IMAGE
-                        fname = '/' + str(fname_index) + '.jpg'
-                        image_url = article_link + 'high_res_d/'
-                        urlretrieve(image_url, fpath + fname)
+                            # DOWNLOAD IMAGE
+                            fname = '/' + str(fname_index) + '.jpg'
+                            image_url = article_link + 'high_res_d/'
+                            print('Download: ' + image_url)
+                            urlretrieve(image_url, fpath + fname)
 
-                        # CHECK IF THERE IS ANOTHER PAGE
-                        next_article_page_link = article_soup.find('a', id='ark-nav-next-top')
-                        if next_article_page_link.has_attr('disabled'):
-                            next_article_page = False
-                        else:
-                            article_link = initial_url + next_article_page_link.get('href')
-                            fname_index += 1
-
+                            # CHECK IF THERE IS ANOTHER PAGE
+                            next_article_page_link = article_soup.find('a', id='ark-nav-next-top')
+                            if next_article_page_link.has_attr('disabled'):
+                                next_article_page = False
+                            else:
+                                article_link = initial_url + next_article_page_link.get('href')
+                                fname_index += 1
+                    except HTTPError as err:
+                        print(err)
+                        pass
 
             # CHECK IF THERE IS ANOTHER PAGE
             next_page_link = soup.find('a', id='pag-next')
